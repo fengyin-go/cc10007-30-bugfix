@@ -16,6 +16,7 @@ const Schema = () => import('@/views/schema/index.vue')
 const Datasync = () => import('@/views/datasync/index.vue')
 const Snapshot = () => import('@/views/snapshot/index.vue')
 const Govern = () => import('@/views/govern/index.vue')
+const Seal = () => import('@/views/seal/index.vue')
 const Monitor = () => import('@/views/monitor/index.vue')
 const Audit = () => import('@/views/audit/index.vue')
 const Catalog = () => import('@/views/catalog/index.vue')
@@ -39,6 +40,7 @@ const router = createRouter({
     { path: '/datasync', name: 'datasync', component: Datasync },
     { path: '/snapshot', name: 'snapshot', component: Snapshot },
     { path: '/govern', name: 'govern', component: Govern },
+    { path: '/seal', name: 'seal', component: Seal },
     { path: '/monitor', name: 'monitor', component: Monitor },
     { path: '/audit', name: 'audit', component: Audit },
     { path: '/catalog', name: 'catalog', component: Catalog },

@@ -1,5 +1,6 @@
 import { MODULE_BY_KEY } from '@/data/modules'
 import { allRows, listRows, resetRows, saveRows } from '@/data/local-store'
+import { currentSeal, listSeals } from '@/api/seal-service'
 import type { ActionResult, EntryRow, ModuleMeta, OverviewResult, PageResult } from '@/data/types'
 
 // 会写进数据的「往回走」动作：命中就把这条记录标成异常态，看板上能一眼看出来。
@@ -88,18 +89,28 @@ export function loadOverview(): OverviewResult {
   const rows = allRows()
   const modules = [...MODULE_BY_KEY.values()].map((meta) => {
     const entries = rows[meta.key] ?? []
+    // 概览只认当前章：存储治理条目若没有生效章，其待处理/异常不计入有效口径。
+    const effective =
+      meta.key === 'govern'
+        ? entries.filter((row) => currentSeal(String(row['策略编号'] ?? '')) !== null)
+        : entries
     return {
       name: meta.name,
-      created: entries.length,
-      pending: entries.filter((row) => row.pending).length,
-      abnormal: entries.filter((row) => row.abnormal).length,
+      created: effective.length,
+      pending: effective.filter((row) => row.pending).length,
+      abnormal: effective.filter((row) => row.abnormal).length,
     }
   })
+  const allSeals = listSeals()
+  const activeSeals = allSeals.filter((seal) => seal.state === '生效中').length
+  const revokedSeals = allSeals.filter((seal) => seal.state === '已撤牌').length
   const cards = [
     { label: '业务模块', value: modules.length },
-    { label: '登记总量', value: modules.reduce((sum, item) => sum + item.created, 0) },
+    { label: '登记总量(当前章)', value: modules.reduce((sum, item) => sum + item.created, 0) },
     { label: '待处理', value: modules.reduce((sum, item) => sum + item.pending, 0) },
     { label: '异常量', value: modules.reduce((sum, item) => sum + item.abnormal, 0) },
+    { label: '当前生效章', value: activeSeals },
+    { label: '已撤牌冻结章', value: revokedSeals },
   ]
   return { cards, modules }
 }
